@@ -1,6 +1,9 @@
 package de.skoeber.environment;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.pi4j.io.gpio.GpioController;
@@ -86,6 +89,10 @@ public class GpioEnvironment extends Loggable {
 			INSTANCE = new GpioEnvironment();
 		}
 		return INSTANCE;
+	}
+	
+	public List<GpioPin> getPins() {
+		return new ArrayList<>(pins.values());
 	}
 	
 	/**

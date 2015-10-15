@@ -1,5 +1,7 @@
 package de.skoeber.resources;
 
+import java.util.List;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -9,6 +11,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.pi4j.io.gpio.GpioPin;
 import com.pi4j.io.gpio.PinMode;
 import com.pi4j.io.gpio.PinState;
 
@@ -17,6 +20,21 @@ import de.skoeber.resources.responses.Error;
 
 @Path("/gpio")
 public class GpioResource {
+	
+	@GET
+	@Path("/pins")
+	@Produces({MediaType.TEXT_PLAIN})
+	public Response listConfiguration() {
+		List<GpioPin> pins = GpioEnvironment.getInstance().getPins();
+		StringBuilder sb = new StringBuilder();
+		for(GpioPin pin : pins) {
+			String name = pin.getName();
+			PinMode mode = pin.getMode();
+			sb.append(name).append(" - ").append(mode.getName());
+		}
+		
+		return Response.ok(sb.toString()).build();
+	}
 
 	@GET
 	@Path("/pin/{n}/state")
