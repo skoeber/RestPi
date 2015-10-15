@@ -21,8 +21,8 @@ public class GpioResource {
 	@GET
 	@Path("/pin/{n}/state")
 	@Produces({MediaType.TEXT_PLAIN})
-	public Response pinState(@PathParam("n") int pinId) {
-		if(pinExists(pinId)) {
+	public Response getState(@PathParam("n") int pinId) {
+		if(!pinExists(pinId)) {
 			return Error.PIN_NOT_FOUND.response();
 		}
 		
@@ -39,7 +39,7 @@ public class GpioResource {
 	@Path("/pin/{n}/state")
 	@Produces({MediaType.TEXT_PLAIN})
 	public Response setState(@PathParam("n") int pinId, @QueryParam("state") int state) {
-		if(pinExists(pinId)) {
+		if(!pinExists(pinId)) {
 			return Error.PIN_NOT_FOUND.response();
 		}
 		
@@ -56,7 +56,7 @@ public class GpioResource {
 	@Path("/pin/{n}/switch")
 	@Produces({MediaType.TEXT_PLAIN})
 	public Response switchState(@PathParam("n") int pinId) {
-		if(pinExists(pinId)) {
+		if(!pinExists(pinId)) {
 			return Error.PIN_NOT_FOUND.response();
 		}
 		
@@ -76,7 +76,7 @@ public class GpioResource {
 	@Path("/pin/{n}/value")
 	@Produces({MediaType.TEXT_PLAIN})
 	public Response getValue(@PathParam("n") int pinId) {
-		if(pinExists(pinId)) {
+		if(!pinExists(pinId)) {
 			return Error.PIN_NOT_FOUND.response();
 		}
 		
@@ -93,7 +93,7 @@ public class GpioResource {
 	@Path("/pin/{n}/value")
 	@Produces({MediaType.TEXT_PLAIN})
 	public Response getValue(@PathParam("n") int pinId, @QueryParam("value") double value) {
-		if(pinExists(pinId)) {
+		if(!pinExists(pinId)) {
 			return Error.PIN_NOT_FOUND.response();
 		}
 		

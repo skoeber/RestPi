@@ -11,7 +11,7 @@ import com.pi4j.io.gpio.GpioPinAnalogOutput;
 import com.pi4j.io.gpio.GpioPinDigital;
 import com.pi4j.io.gpio.GpioPinDigitalInput;
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
-import com.pi4j.io.gpio.GpioPinInput;
+import com.pi4j.io.gpio.Pin;
 import com.pi4j.io.gpio.PinMode;
 import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
@@ -38,16 +38,46 @@ public class GpioEnvironment extends Loggable {
 		ConfigurationEnvironment config = ConfigurationEnvironment.getInstance();
 		
 		for(int pinId : config.getConfiguredPins()) {
+			logInfo("Setting up pin " + pinId);
+			
 			PinMode mode = config.getPinMode(pinId);
 			String name = config.getPinName(pinId);
 			
-			GpioPin pin = gpio.provisionPin(RaspiPin.getPinByName("GPIO " + pinId), name, mode);
+			GpioPin gpioPin = null;
+			Pin pin = RaspiPin.getPinByName("GPIO " + pinId);
 			
-			if(pin instanceof GpioPinInput) {
-				((GpioPinDigitalOutput)pin).setState(config.getPinState(pinId));
+			switch(mode) {
+				case DIGITAL_INPUT:
+					logInfo(" as digital input");
+					gpioPin = gpio.provisionDigitalInputPin(pin, name);
+					break;
+					
+				case DIGITAL_OUTPUT:
+					logInfo(" as digital output");
+					PinState defaultState = config.getPinState(pinId);
+					gpioPin = gpio.provisionDigitalOutputPin(pin, name, defaultState);
+					break;
+					
+				case ANALOG_INPUT:
+					logInfo(" as analog input");
+					gpioPin = gpio.provisionAnalogInputPin(pin, name);
+					break;
+					
+				case ANALOG_OUTPUT:
+					logInfo(" as analog output");
+					gpioPin = gpio.provisionAnalogOutputPin(pin, name);
+					break;
+					
+				case PWM_OUTPUT:
+					logInfo(" as pwm output");
+					gpioPin = gpio.provisionPwmOutputPin(pin, name);
+					break;
+					
+				default:
+					logError("Pin " + pinId + " seems to be configured not properly.");
 			}
 			
-			pins.put(pinId, pin);
+			pins.put(pinId, gpioPin);
 		}
 	}
 	
