@@ -161,11 +161,19 @@ public class ConfigurationEnvironment extends Loggable {
 	public PinState getPinState(int pin) {
 		String key = "gpio.pin." + pin + ".state";
 		String value = properties.getProperty(key);
-		PinState ps = PinState.LOW; // default
+		int state = 0; // default = LOW
+		PinState ps = PinState.getState(state);
+		
 		try {
-			ps = PinState.valueOf(value);
+			state = Integer.valueOf(value);
+		} catch(NumberFormatException ex) {
+			logError("Invalid PinState configuration: Only numeric values 0 or 1 are allowed.");
+		}
+		
+		try {
+			return PinState.getState(state);
 		} catch (IllegalArgumentException ex) {
-			logError("Invalid PinState configuration: \"" + key + ":" + value + "\" Using default value \"low\".");
+			logError("Invalid PinState configuration: \"" + key + ":" + value + "\" Using default \"low\".");
 		}
 		return ps;
 	}

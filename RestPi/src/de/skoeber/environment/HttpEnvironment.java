@@ -4,15 +4,19 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import javax.ws.rs.core.UriBuilder;
 
 import org.glassfish.grizzly.GrizzlyFuture;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
+import de.skoeber.environment.provider.GpioExceptionMapper;
+import de.skoeber.environment.provider.PinNotFoundExceptionMapper;
+import de.skoeber.environment.provider.RestPiExceptionMapper;
+import de.skoeber.environment.provider.UnsatisfiedLinkErrorMapper;
 import de.skoeber.util.Loggable;
 
 /**
@@ -36,6 +40,17 @@ public class HttpEnvironment extends Loggable {
 		
 		URI uri = UriBuilder.fromUri(host).port(port).build();
 		ResourceConfig rc = new ResourceConfig();
+		
+		// register exception mapper
+		rc.register(RestPiExceptionMapper.class);
+		rc.register(GpioExceptionMapper.class);
+		rc.register(PinNotFoundExceptionMapper.class);
+		rc.register(UnsatisfiedLinkErrorMapper.class);
+		
+		// register media type support
+		rc.register(JacksonFeature.class);
+		
+		// register ressource package
 		rc.packages("de.skoeber.resources");
 		
 		webServer = GrizzlyHttpServerFactory.createHttpServer(uri, rc, false);
@@ -55,18 +70,8 @@ public class HttpEnvironment extends Loggable {
 		try {
 			Runtime.getRuntime().addShutdownHook(new ShutdownHandler());
 			webServer.start();
-			
-			synchronized (MUTEX) {
-	            try {
-	                MUTEX.wait();
-	            } catch (InterruptedException e) {
-	                //
-	            }
-	        }
-			
-			//System.in.read();
-			stopServer();
-		} catch (IOException e) {
+			Thread.currentThread().join();
+		} catch (IOException | InterruptedException e) {
 			logError(e.getMessage());
 		}
 	}
@@ -78,15 +83,21 @@ public class HttpEnvironment extends Loggable {
 		if(webServer.isStarted()) {
 			logInfo("The server is shutting down now");
 			
-			GpioEnvironment.getInstance().shutdown();
-			GrizzlyFuture<HttpServer> future = webServer.shutdown();
 			try {
-				future.get(30, TimeUnit.SECONDS);
-			} catch (InterruptedException | ExecutionException | TimeoutException e) {
-				logError("Error on shutdown", e.getCause());
+				GpioEnvironment.getInstance().shutdown();
+			} catch(UnsatisfiedLinkError e) {
+				logError("GPIO was not running and thus cannot be shutdown properly.");
 			}
 			
-			logInfo("Server stopped");
+			GrizzlyFuture<HttpServer> future = webServer.shutdown(10, TimeUnit.SECONDS);
+			try {
+				future.get();
+			} catch (InterruptedException | ExecutionException e) {
+				logError("Error on shutdown", e.getCause());
+			} finally {
+				logInfo("Server stopped");
+				System.exit(0);
+			}
 		}
 	}
 	
@@ -95,7 +106,7 @@ public class HttpEnvironment extends Loggable {
 	    @Override
 	    public void run() {
 	        synchronized (MUTEX) {
-	            MUTEX.notifyAll();
+	            HttpEnvironment.getInstance().stopServer();
 	        }
 	    }
 	}

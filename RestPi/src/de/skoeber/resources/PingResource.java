@@ -7,6 +7,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import de.skoeber.resources.exceptions.RestPiException;
 import de.skoeber.resources.responses.Error;
 
 /**
@@ -21,21 +22,29 @@ public class PingResource {
 
 	@GET
 	@Path("ping")
-	@Produces({MediaType.TEXT_PLAIN})
+	@Produces({MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON})
 	public Response ping() {
 		return Response.ok(answer).build();
 	}
 	
 	@GET
 	@Path("echo")
-	@Produces({MediaType.TEXT_PLAIN})
-	public Response echo(@QueryParam("message") final String message) {
+	@Produces({MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON})
+	public Response echo(@QueryParam("message") final String message) throws RestPiException {
 		
 		if(message == null || message.isEmpty()) {
-			return Error.MISSING_PARAMETER.response("message");
+			throw new RestPiException(Error.MISSING_PARAMETER);
 		}
 		
-		return Response.ok(message).build();
+		return Response.ok(new Message(message)).build();
 	}
 	
+}
+
+class Message {
+	String message;
+	
+	protected Message(String message) {
+		this.message = message;
+	}
 }

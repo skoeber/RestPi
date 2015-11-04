@@ -16,10 +16,14 @@ import com.pi4j.io.gpio.PinMode;
 import com.pi4j.io.gpio.PinState;
 
 import de.skoeber.environment.GpioEnvironment;
+import de.skoeber.resources.exceptions.GpioException;
+import de.skoeber.resources.exceptions.PinNotFoundException;
+import de.skoeber.resources.exceptions.RestPiException;
 import de.skoeber.resources.responses.Error;
+import de.skoeber.util.Loggable;
 
 @Path("/gpio")
-public class GpioResource {
+public class GpioResource extends Loggable {
 	
 	@GET
 	@Path("/pins")
@@ -39,15 +43,15 @@ public class GpioResource {
 	@GET
 	@Path("/pin/{n}/state")
 	@Produces({MediaType.TEXT_PLAIN})
-	public Response getState(@PathParam("n") int pinId) {
+	public Response getState(@PathParam("n") int pinId) throws RestPiException {
 		if(!pinExists(pinId)) {
-			return Error.PIN_NOT_FOUND.response();
+			throw new PinNotFoundException(Error.PIN_NOT_FOUND);
 		}
 		
 		PinState state = GpioEnvironment.getInstance().getState(pinId);
 		
 		if(state == null) {
-			return Error.PIN_NO_DIGITAL.response();
+			throw new GpioException(Error.PIN_NO_DIGITAL);
 		}
 		
 		return Response.ok(state == PinState.HIGH ? 1 : 0).build();
@@ -56,13 +60,13 @@ public class GpioResource {
 	@PUT
 	@Path("/pin/{n}/state")
 	@Produces({MediaType.TEXT_PLAIN})
-	public Response setState(@PathParam("n") int pinId, @QueryParam("state") int state) {
+	public Response setState(@PathParam("n") int pinId, @QueryParam("state") int state) throws RestPiException {
 		if(!pinExists(pinId)) {
-			return Error.PIN_NOT_FOUND.response();
+			throw new PinNotFoundException(Error.PIN_NOT_FOUND);
 		}
 		
 		if(GpioEnvironment.getInstance().getState(pinId) == null) {
-			return Error.PIN_NO_DIGITAL.response();
+			throw new GpioException(Error.PIN_NO_DIGITAL);
 		}
 		
 		GpioEnvironment.getInstance().setState(pinId, state);
@@ -73,15 +77,15 @@ public class GpioResource {
 	@PUT
 	@Path("/pin/{n}/switch")
 	@Produces({MediaType.TEXT_PLAIN})
-	public Response switchState(@PathParam("n") int pinId) {
+	public Response switchState(@PathParam("n") int pinId) throws RestPiException {
 		if(!pinExists(pinId)) {
-			return Error.PIN_NOT_FOUND.response();
+			throw new PinNotFoundException(Error.PIN_NOT_FOUND);
 		}
 		
 		PinState state = GpioEnvironment.getInstance().getState(pinId);
 		
 		if(state == null) {
-			return Error.PIN_NO_DIGITAL.response();
+			throw new GpioException(Error.PIN_NO_DIGITAL);
 		}
 		
 		state = PinState.getInverseState(state);
@@ -90,16 +94,43 @@ public class GpioResource {
 		return Response.ok("OK").build();
 	}
 	
+	@PUT
+	@Path("/pin/{n}/interval")
+	@Produces({MediaType.TEXT_PLAIN})
+	public Response interval(@PathParam("n") int pinId, @QueryParam("frequency") int milliseconds, @QueryParam("repeats") int repeats) throws RestPiException {
+		if(!pinExists(pinId)) {
+			throw new PinNotFoundException(Error.PIN_NOT_FOUND);
+		}
+		
+		PinState state = GpioEnvironment.getInstance().getState(pinId);
+		
+		if(state == null) {
+			throw new GpioException(Error.PIN_NO_DIGITAL);
+		}
+		
+		for(int i = 0; i < repeats; i++) {
+			state = PinState.getInverseState(state);
+			GpioEnvironment.getInstance().setState(pinId, state.getValue());
+			try {
+				Thread.sleep(milliseconds);
+			} catch (InterruptedException e) {
+				logError("Interval execution interrupted", e);
+			}
+		}
+		
+		return Response.ok("OK").build();
+	}
+	
 	@GET
 	@Path("/pin/{n}/value")
 	@Produces({MediaType.TEXT_PLAIN})
-	public Response getValue(@PathParam("n") int pinId) {
+	public Response getValue(@PathParam("n") int pinId) throws RestPiException {
 		if(!pinExists(pinId)) {
-			return Error.PIN_NOT_FOUND.response();
+			throw new PinNotFoundException(Error.PIN_NOT_FOUND);
 		}
 		
 		if(!(PinMode.allAnalog().contains(GpioEnvironment.getInstance().getMode(pinId)))) {
-			return Error.PIN_NO_ANALOG.response();
+			throw new GpioException(Error.PIN_NO_ANALOG);
 		}
 		
 		Double value = GpioEnvironment.getInstance().getValue(pinId);
@@ -110,13 +141,13 @@ public class GpioResource {
 	@PUT
 	@Path("/pin/{n}/value")
 	@Produces({MediaType.TEXT_PLAIN})
-	public Response getValue(@PathParam("n") int pinId, @QueryParam("value") double value) {
+	public Response getValue(@PathParam("n") int pinId, @QueryParam("value") double value) throws RestPiException {
 		if(!pinExists(pinId)) {
-			return Error.PIN_NOT_FOUND.response();
+			throw new PinNotFoundException(Error.PIN_NOT_FOUND);
 		}
 		
 		if(!(PinMode.ANALOG_INPUT.equals(GpioEnvironment.getInstance().getMode(pinId)))) {
-			return Error.PIN_NO_ANALOG.response();
+			throw new GpioException(Error.PIN_NO_ANALOG);
 		}
 		
 		GpioEnvironment.getInstance().setValue(pinId, value);

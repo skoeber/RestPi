@@ -5,6 +5,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import de.skoeber.environment.HttpEnvironment;
 import de.skoeber.util.Loggable;
 
 @Path("/admin")
@@ -15,7 +16,7 @@ public class AdminResource extends Loggable {
 	@Produces({MediaType.TEXT_PLAIN})
 	public boolean shutdown() {
 		logInfo("Received shutdown request.");
-		System.exit(0);
+		HttpEnvironment.getInstance().stopServer();
 		
 		return true;
 	}

@@ -1,7 +1,6 @@
 package de.skoeber.environment;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +32,7 @@ public class GpioEnvironment extends Loggable {
 	
 	private Map<Integer, GpioPin> pins = new HashMap<Integer, GpioPin>();
 
-	private GpioEnvironment() {
+	private GpioEnvironment() throws UnsatisfiedLinkError {
 		logInfo("Initialising GPIO interface");
 		
 		gpio = GpioFactory.getInstance();
