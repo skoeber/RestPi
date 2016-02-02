@@ -1,21 +1,23 @@
 package de.skoeber;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.skoeber.environment.ConfigurationEnvironment;
-import de.skoeber.environment.GpioEnvironment;
 import de.skoeber.environment.HttpEnvironment;
-import de.skoeber.util.Loggable;
 
 /**
  * 
  * @author skoeber
  *
  */
-public class RestPiServer extends Loggable {
+public class RestPiServer {
 	
-	private static final Logger logger = Logger.getLogger(RestPiServer.class.getCanonicalName());
+	static {
+		System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
+	}
+	
+	private static final Logger logger = LogManager.getLogger(RestPiServer.class.getCanonicalName());
 
 	/**
 	 * Start the RestPi server
@@ -28,13 +30,13 @@ public class RestPiServer extends Loggable {
 				ConfigurationEnvironment.getInstance();
 				
 				// Initialising GPIO interface
-				GpioEnvironment.getInstance();
+//				GpioEnvironment.getInstance();
 				
 				// Starting RestPiServer
 				HttpEnvironment.getInstance().startServer();
 			}
 		} catch(Exception e) {
-			logger.log(Level.ALL, e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 		}
 		
 	}

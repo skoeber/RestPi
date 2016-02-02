@@ -1,5 +1,6 @@
 package de.skoeber.resources;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -29,6 +30,7 @@ public class PingResource {
 	
 	@GET
 	@Path("echo")
+	@Consumes({MediaType.TEXT_PLAIN})
 	@Produces({MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON})
 	public Response echo(@QueryParam("message") final String message) throws RestPiException {
 		
@@ -44,6 +46,14 @@ public class PingResource {
 class Message {
 	String message;
 	
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
 	protected Message(String message) {
 		this.message = message;
 	}

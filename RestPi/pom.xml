@@ -3,8 +3,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.skoeber</groupId>
 	<artifactId>RestPi</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.5</version>
 	<description>Raspberry Pi REST Interface</description>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<plugins>
@@ -17,23 +22,23 @@
 				</configuration>
 			</plugin>
 			<plugin>
-			    <groupId>org.apache.maven.plugins</groupId>
-			    <artifactId>maven-dependency-plugin</artifactId>
-			    <executions>
-			        <execution>
-			            <id>copy-dependencies</id>
-			            <phase>prepare-package</phase>
-			            <goals>
-			                <goal>copy-dependencies</goal>
-			            </goals>
-			            <configuration>
-			                <outputDirectory>${project.build.directory}/lib</outputDirectory>
-			                <overWriteReleases>false</overWriteReleases>
-			                <overWriteSnapshots>false</overWriteSnapshots>
-			                <overWriteIfNewer>true</overWriteIfNewer>
-			            </configuration>
-			        </execution>
-			    </executions>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/lib</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -42,30 +47,37 @@
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
-                			<classpathPrefix>lib/</classpathPrefix>
+							<classpathPrefix>lib/</classpathPrefix>
 							<mainClass>de.skoeber.RestPiServer</mainClass>
 						</manifest>
 						<manifestEntries>
-							<Class-Path>conf/</Class-Path>
+							<Class-Path>resources/</Class-Path>
 						</manifestEntries>
 					</archive>
 				</configuration>
 			</plugin>
 		</plugins>
+		<resources>
+			<resource>
+				<directory>resources</directory>
+			</resource>
+			<resource>
+				<directory>resources/conf</directory>
+			</resource>
+		</resources>
 	</build>
-	<repositories>
-		<!--
-		<repository>
-			<id>oss-snapshots-repo</id>
-			<name>Sonatype OSS Maven Repository</name>
-			<url>https://oss.sonatype.org/content/groups/public</url>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-			</snapshots>
-		</repository>
-		-->
-	</repositories>
+	<!-- <repositories> -->
+	<!-- <repository> -->
+	<!-- <id>oss-snapshots-repo</id> -->
+	<!-- <name>Sonatype OSS Maven -->
+	<!-- Repository</name> -->
+	<!-- <url>https://oss.sonatype.org/content/groups/public</url> -->
+	<!-- <snapshots> -->
+	<!-- <enabled>true</enabled> -->
+	<!-- <updatePolicy>always</updatePolicy> -->
+	<!-- </snapshots> -->
+	<!-- </repository> -->
+	<!-- </repositories> -->
 	<dependencies>
 		<dependency>
 			<groupId>org.glassfish.grizzly</groupId>
@@ -91,6 +103,27 @@
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-json-jackson</artifactId>
 			<version>2.22.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>2.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-jul</artifactId>
+			<version>2.5</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

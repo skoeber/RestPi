@@ -8,6 +8,8 @@ import java.util.concurrent.TimeUnit;
 import javax.ws.rs.core.UriBuilder;
 
 import org.glassfish.grizzly.GrizzlyFuture;
+import org.glassfish.grizzly.http.server.CLStaticHttpHandler;
+import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jackson.JacksonFeature;
@@ -32,13 +34,14 @@ public class HttpEnvironment extends Loggable {
 	
 	private static HttpEnvironment INSTANCE;
 	private static HttpServer webServer;
+	private static HttpHandler staticHttpHandler;
 	
 	private static final Object MUTEX = new Object();
 
 	private HttpEnvironment() {
 		logInfo("Starting RestPiServer");
 		
-		URI uri = UriBuilder.fromUri(host).port(port).build();
+		URI uri = UriBuilder.fromUri(host).port(port).path("api").build();
 		ResourceConfig rc = new ResourceConfig();
 		
 		// register exception mapper
@@ -53,7 +56,12 @@ public class HttpEnvironment extends Loggable {
 		// register ressource package
 		rc.packages("de.skoeber.resources");
 		
+		// create webserver
 		webServer = GrizzlyHttpServerFactory.createHttpServer(uri, rc, false);
+		
+		// add static content
+		staticHttpHandler = new CLStaticHttpHandler(this.getClass().getClassLoader(), "/static/");
+		webServer.getServerConfiguration().addHttpHandler(staticHttpHandler, "/");
 	}
 	
 	public static HttpEnvironment getInstance() {
@@ -84,7 +92,7 @@ public class HttpEnvironment extends Loggable {
 			logInfo("The server is shutting down now");
 			
 			try {
-				GpioEnvironment.getInstance().shutdown();
+				//GpioEnvironment.getInstance().shutdown();
 			} catch(UnsatisfiedLinkError e) {
 				logError("GPIO was not running and thus cannot be shutdown properly.");
 			}

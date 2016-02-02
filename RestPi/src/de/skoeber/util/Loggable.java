@@ -1,37 +1,29 @@
 package de.skoeber.util;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public abstract class Loggable {
 
-	private final Logger logger = Logger.getLogger(getClass().getCanonicalName());
-	private final DateFormat df = new SimpleDateFormat("yyyy.MM.dd hh:mm:ss.S");
+	private final Logger logger = LogManager.getLogger(getClass());
 	
 	public void logError(String msg, Throwable cause) {
-		logger.log(Level.SEVERE, formatMsg(msg), cause);
+		logger.error(msg, cause);
 	}
 	
 	public void logError(String msg) {
-		logger.log(Level.SEVERE, formatMsg(msg));
+		logger.error(msg);
 	}
 	
 	public void logWarn(String msg) {
-		logger.log(Level.WARNING, formatMsg(msg));
+		logger.warn(msg);
 	}
 	
 	public void logInfo(String msg) {
-		logger.log(Level.INFO, formatMsg(msg));
+		logger.info(msg);
 	}
 	
 	public void logDebug(String msg) {
-		logger.log(Level.FINE, formatMsg(msg));
-	}
-	
-	private String formatMsg(String msg) {
-		return df.format(new Date()) + " " +  msg;
+		logger.debug(msg);
 	}
 }

@@ -149,6 +149,15 @@ public class GpioEnvironment extends Loggable {
 	 */
 	public PinState getState(int number) {
 		GpioPin pin = pins.get(number);
+		return getState(pin);
+	}
+	
+	/**
+	 * Returns the actual state (input or output) of the digital pin
+	 * @param pin GpioPin
+	 * @return <code>PinState</code> or null if the pin does not exist or is not a digital one
+	 */
+	public PinState getState(GpioPin pin) {
 		if(pin != null) {
 			if(pin instanceof GpioPinDigital) {
 				return gpio.getState((GpioPinDigital) pin);

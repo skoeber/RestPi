@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -38,11 +39,16 @@ public class ConfigurationEnvironment extends Loggable {
 		String currentPath = new File("").getAbsolutePath();
 		String absolutePath = currentPath.concat(File.separator).concat(propFilePath);
 		
-		FileInputStream fis = null;
+		File configFile = new File(absolutePath);
+		InputStream fis = null;
 		BufferedInputStream bis = null;
 		
 		try {
-			fis = new FileInputStream(absolutePath);
+			if(configFile.exists()) {
+				fis = new FileInputStream(absolutePath);
+			} else {
+				fis = this.getClass().getClassLoader().getResourceAsStream(propFilePath);
+			}
 		} catch (FileNotFoundException e) {
 			logError("Properties file not found: " + absolutePath, e);
 			return;

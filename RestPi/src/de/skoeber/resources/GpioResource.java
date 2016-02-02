@@ -1,5 +1,6 @@
 package de.skoeber.resources;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.GET;
@@ -16,6 +17,7 @@ import com.pi4j.io.gpio.PinMode;
 import com.pi4j.io.gpio.PinState;
 
 import de.skoeber.environment.GpioEnvironment;
+import de.skoeber.gpio.RestPiPin;
 import de.skoeber.resources.exceptions.GpioException;
 import de.skoeber.resources.exceptions.PinNotFoundException;
 import de.skoeber.resources.exceptions.RestPiException;
@@ -27,17 +29,19 @@ public class GpioResource extends Loggable {
 	
 	@GET
 	@Path("/pins")
-	@Produces({MediaType.TEXT_PLAIN})
+	@Produces({MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON})
 	public Response listConfiguration() {
 		List<GpioPin> pins = GpioEnvironment.getInstance().getPins();
-		StringBuilder sb = new StringBuilder();
+		List<RestPiPin> cPins = new ArrayList<>();
 		for(GpioPin pin : pins) {
 			String name = pin.getName();
 			PinMode mode = pin.getMode();
-			sb.append(name).append(" - ").append(mode.getName());
+			PinState state = GpioEnvironment.getInstance().getState(pin);
+			RestPiPin cPin = new RestPiPin(name, mode.getName(), state.getValue());
+			cPins.add(cPin);
 		}
 		
-		return Response.ok(sb.toString()).build();
+		return Response.ok(cPins).build();
 	}
 
 	@GET
