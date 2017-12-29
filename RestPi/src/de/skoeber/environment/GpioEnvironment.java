@@ -189,7 +189,7 @@ public class GpioEnvironment extends Loggable {
 		GpioPin pin = pins.get(number);
 		if(pin != null) {
 			if(pin instanceof GpioPinAnalog) {
-				return new Double(gpio.getValue((GpioPinAnalog) pin));
+				return Double.valueOf(gpio.getValue((GpioPinAnalog) pin));
 			}
 		}
 		return null;
